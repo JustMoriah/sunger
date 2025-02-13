@@ -13,18 +13,21 @@ const LogIn = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post("https//localhost:3001/api/registros/", user)
+        axios.get(`https//localhost:3001/api/users/${email}`, user)
             .then(() => alert("Usuario registrado"))
             .catch(error => console.error(error));
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input type="email" name="email" placeholder="Correo Electronico" onChange={handleChange} required/>
-            <input type="password" name="passwd" placeholder="Contraseña" onChange={handleChange} required/><br/>
-            <a href="/"><button type="submit">Agregar Usuario</button></a>
-        </form>
+        <div>
+            <form onSubmit={handleSubmit}>
+                <input type="email" name="email" placeholder="Correo Electronico" onChange={handleChange} required/>
+                <input type="password" name="passwd" placeholder="Contraseña" onChange={handleChange} required/><br/>
+                <button type="submit">Iniciar Sesión</button>
+            </form>
+            <p>¿No tienes una cuenta? <a href="/signup">Registrate</a>.</p>
+        </div>
     );
 };
 
-export default UserForm;
+export default LogIn;

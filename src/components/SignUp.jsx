@@ -17,21 +17,24 @@ const LogIn = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.post("https//localhost:3001/api/registros/", user)
+        axios.post("https//localhost:3001/api/users/", user)
             .then(() => alert("Usuario registrado"))
             .catch(error => console.error(error));
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input type="email" name="email" placeholder="Correo Electronico" onChange={handleChange} required/>
-            <input type="password" name="passwd" placeholder="Contraseña" onChange={handleChange} required/><br/>
-            <input type="text" name="nme" placeholder="Nombre" onChange={handleChange} required/><br/>
-            <input type="text" name="surnme" placeholder="Apellido(s)" onChange={handleChange} required/><br/>
-            <input type="date" name="brthdte" onChange={handleChange} required/><br/>
-            <a href="/"><button type="submit">Agregar Usuario</button></a>
-        </form>
+        <div>
+            <form onSubmit={handleSubmit}>
+                <input type="email" name="email" placeholder="Correo Electronico" onChange={handleChange} required/>
+                <input type="password" name="passwd" placeholder="Contraseña" onChange={handleChange} required/><br/>
+                <input type="text" name="nme" placeholder="Nombre" onChange={handleChange} required/><br/>
+                <input type="text" name="surnme" placeholder="Apellido(s)" onChange={handleChange} required/><br/>
+                <input type="date" name="brthdte" onChange={handleChange} required/><br/>
+                <button type="submit">Registrarse</button>
+            </form>
+            <p>¿Ya tienes una cuenta? <a href="/login">Inica sesión</a>.</p>
+        </div>
     );
 };
 
-export default UserForm;
+export default SignUp;
