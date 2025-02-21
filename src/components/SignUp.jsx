@@ -18,7 +18,7 @@ const SignUp = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
     
-        axios.get(`http://localhost:3001/api/users/${user.email}`)
+        axios.get(`http://localhost:3001/api/users/email/${user.email}`)
             .then((response) => {
                 if (response.data) {
                     alert("El correo ingresado ya esta en uso, por favor elige uno diferente o inicia sesion.");

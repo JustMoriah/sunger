@@ -14,11 +14,12 @@ const Login = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        axios.get(`http://localhost:3001/api/users/${user.email}`)
+        axios.get(`http://localhost:3001/api/users/email/${user.email}`)
             .then((response) => {
                 const storedUser = response.data;
                 if (storedUser) {
                     if (storedUser.passwd === user.passwd) {
+                        sessionStorage.setItem("id", `${storedUser.id_user}`);
                         if (storedUser.id_role_1 === 1) {
                             window.location.href = "/owner";
                         } else if (storedUser.id_role_1 === 2) {
