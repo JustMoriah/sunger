@@ -1,50 +1,50 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  max-width: 1280px;  /* Limita el ancho máximo del contenedor a 1280px */
+  margin: 0 auto;  /* Centra el contenedor horizontalmente */
+  padding: 2rem;  /* Agrega un espacio de 2rem alrededor del contenedor */
+  text-align: center;  /* Centra el texto dentro del contenedor */
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+  height: 6em;  /* Define la altura del logo en 6em */
+  padding: 1.5em;  /* Aplica un espacio interno de 1.5em alrededor del logo */
+  will-change: filter;  /* Optimiza el rendimiento al anticipar el cambio en el filtro */
+  transition: filter 300ms;  /* Establece una transición de 300ms para el cambio de filtro */
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #646cffaa);  /* Aplica un filtro de sombra en el logo al hacer hover */
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #61dafbaa);  /* Aplica un filtro de sombra de color diferente al logo cuando se pasa el cursor sobre el logo con la clase react */
 }
 
 @keyframes logo-spin {
   from {
-    transform: rotate(0deg);
+    transform: rotate(0deg);  /* Inicia la animación desde la rotación de 0 grados */
   }
   to {
-    transform: rotate(360deg);
+    transform: rotate(360deg);  /* Termina la animación con una rotación de 360 grados */
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+    animation: logo-spin infinite 20s linear;  /* Aplica la animación de giro al logo en el segundo enlace */
   }
 }
 
 .card {
-  padding: 2em;
+  padding: 2em;  /* Aplica un relleno de 2em dentro de las tarjetas */
 }
 
 .read-the-docs {
-  color: #888;
+  color: #888;  /* Establece el color del texto como un gris claro */
 }
 
 th {
-  background-color: orange;
+  background-color: orange;  /* Establece un fondo de color naranja para las celdas de los encabezados */
 }
 
 td {
-  background-color: lightgoldenrodyellow;
+  background-color: lightgoldenrodyellow;  /* Establece un fondo de color amarillo pálido para las celdas */
 }

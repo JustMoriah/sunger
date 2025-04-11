@@ -1,90 +1,97 @@
+// Importamos los hooks de React, axios para hacer peticiones HTTP, y la librería XLSX para trabajar con archivos Excel
 import { useState } from "react";
 import axios from "axios";
-import * as XLSX from "xlsx"; // Import the xlsx library
+import * as XLSX from "xlsx"; // Importamos la librería xlsx para poder leer y manejar archivos Excel
 
+// Componente UploadExcel
 const UploadExcel = () => {
-  const [archivo, setArchivo] = useState(null);
-  const [mensaje, setMensaje] = useState("");
-  const [error, setError] = useState(""); // For error notifications
-  const [excelData, setExcelData] = useState([]); // Store the data from the uploaded Excel
-  const [fileName, setFileName] = useState(""); // Store the file name
+  // Definimos los estados necesarios para manejar el archivo, mensajes, errores y datos del Excel
+  const [archivo, setArchivo] = useState(null); // Archivo que se subirá
+  const [mensaje, setMensaje] = useState(""); // Mensaje de éxito
+  const [error, setError] = useState(""); // Mensaje de error
+  const [excelData, setExcelData] = useState([]); // Almacenamos los datos del archivo Excel
+  const [fileName, setFileName] = useState(""); // Almacenamos el nombre del archivo
 
-  // Handle file selection and parse the Excel file
+  // Función que maneja la selección de archivos y la lectura del archivo Excel
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]; // Obtenemos el archivo seleccionado
     if (file) {
-      setArchivo(file);
-      setFileName(file.name);
+      setArchivo(file); // Actualizamos el estado del archivo
+      setFileName(file.name); // Almacenamos el nombre del archivo
 
-      // Read the file using xlsx library
+      // Usamos el FileReader para leer el contenido del archivo
       const reader = new FileReader();
       reader.onload = (event) => {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
+        const data = new Uint8Array(event.target.result); // Obtenemos los datos binarios del archivo
+        const workbook = XLSX.read(data, { type: "array" }); // Leemos el archivo Excel usando XLSX
 
-        // Get the first sheet data
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
+        // Obtenemos los datos de la primera hoja del archivo
+        const sheetName = workbook.SheetNames[0]; // Nombre de la primera hoja
+        const worksheet = workbook.Sheets[sheetName]; // Obtenemos la hoja correspondiente
 
-        // Convert sheet data to JSON (table format)
+        // Convertimos los datos de la hoja a formato JSON (como una tabla)
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        setExcelData(jsonData); // Set the parsed data
+        setExcelData(jsonData); // Guardamos los datos del Excel en el estado
       };
 
-      reader.readAsArrayBuffer(file); // Read the file
+      reader.readAsArrayBuffer(file); // Leemos el archivo como un ArrayBuffer
     }
   };
 
+  // Función para manejar el envío del archivo a la API
   const handleUpload = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevenimos el comportamiento predeterminado del formulario
+
     if (!archivo) {
-      setMensaje("");
-      setError("Selecciona un archivo Excel");
+      setMensaje(""); // Limpiamos cualquier mensaje previo
+      setError("Selecciona un archivo Excel"); // Mostramos error si no se seleccionó un archivo
       return;
     }
-  
+
+    // Creamos un objeto FormData para enviar el archivo en la solicitud POST
     const formData = new FormData();
-    formData.append("file", archivo); // Ensure the field name matches "file" on the backend
-  
+    formData.append("file", archivo); // Aseguramos que el campo se llama "file" en el backend
+
     try {
+      // Enviamos el archivo a la API usando axios
       const response = await axios.post("https://api1.sunger.xdn.com.mx/api/subir-excel", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-  
-      // Ensure the response contains the correct data (including the status field)
+
+      // Verificamos si la respuesta contiene los datos correctos
       if (response.data && response.data.data && Array.isArray(response.data.data)) {
-        setExcelData(response.data.data); // Update excelData with the rows containing status field
+        setExcelData(response.data.data); // Actualizamos los datos con la respuesta de la API
         const { registrosInsertados, registrosDuplicados, registrosFaltantes } = response.data;
         
-        setError(""); // Clear error message, if any
+        setError(""); // Limpiamos cualquier mensaje de error
         setMensaje(`Registros insertados: ${registrosInsertados}, Duplicados: ${registrosDuplicados}, Registros con datos faltantes: ${registrosFaltantes}`);
       } else {
-        setError("Error en la respuesta del servidor");
+        setError("Error en la respuesta del servidor"); // Mostramos un error si la respuesta no es válida
       }
     } catch (error) {
-      console.error("Upload error:", error);
-      setError("Error al subir el archivo");
-      setMensaje(""); // Clear success message
+      console.error("Upload error:", error); // Mostramos cualquier error en la consola
+      setError("Error al subir el archivo"); // Mostramos un mensaje de error
+      setMensaje(""); // Limpiamos el mensaje de éxito si ocurrió un error
     }
-  };  
-
-  const getRowColor = (status) => {
-    if (status === "Subido") return "Green";
-    if (status === "Duplicado") return "Orange";
-    if (status === "Datos faltantes") return "Red";
-    return "";
   };
-  
+
+  // Función para determinar el color de la fila según el estado
+  const getRowColor = (status) => {
+    if (status === "Subido") return "Green"; // Verde si el estado es "Subido"
+    if (status === "Duplicado") return "Orange"; // Naranja si el estado es "Duplicado"
+    if (status === "Datos faltantes") return "Red"; // Rojo si el estado es "Datos faltantes"
+    return ""; // Si no tiene un estado válido, no se aplica color
+  };
 
   return (
     <div>
       <h3>Subir archivo Excel</h3>
 
-      {/* Show success or error messages */}
+      {/* Mostrar mensajes de éxito o error */}
       {mensaje && <p>{mensaje}</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* Show the Excel content before uploading */}
+      {/* Mostrar el contenido del archivo Excel antes de enviarlo */}
       {excelData.length > 0 && (
         <div className='table-container'>
           <h4>Contenido del archivo {fileName}:</h4>
@@ -103,10 +110,11 @@ const UploadExcel = () => {
               </tr>
             </thead>
             <tbody>
+              {/* Mostrar los datos del Excel en una tabla */}
               {excelData.map((row, index) => (
                 <tr
                   key={index}
-                  style={{ color: getRowColor(row.status) }}
+                  style={{ color: getRowColor(row.status) }} // Colorear la fila según el estado
                 >
                   <td>{row.id_rol}</td>
                   <td>{row.nombre}</td>
@@ -124,12 +132,12 @@ const UploadExcel = () => {
         </div>
       )}
 
-      {/* Form for uploading the Excel */}
+      {/* Formulario para subir el archivo Excel */}
       <form onSubmit={handleUpload}>
         <input
           type="file"
-          accept=".xlsx"
-          onChange={handleFileChange}
+          accept=".xlsx" // Solo aceptamos archivos .xlsx
+          onChange={handleFileChange} // Llamamos a handleFileChange cuando el archivo cambia
         />
         <button type="submit">Subir</button>
       </form>

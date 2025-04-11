@@ -1,39 +1,67 @@
+// Importa React y los hooks necesarios
 import React, { useEffect, useState } from 'react';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale } from 'chart.js';
+
+// Importa axios para hacer peticiones HTTP
 import axios from 'axios';
-import ChartDataLabels from 'chartjs-plugin-datalabels'; // Import chartjs-plugin-datalabels
 
-// Register the necessary chart.js components
-ChartJS.register(Title, Tooltip, Legend, ArcElement, CategoryScale, LinearScale, ChartDataLabels); // Register the plugin
+// Importa el componente Pie desde react-chartjs-2 para mostrar un gráfico circular
+import { Pie } from 'react-chartjs-2';
 
+// Importa los componentes de Chart.js necesarios para construir el gráfico
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  CategoryScale,
+  LinearScale
+} from 'chart.js';
+
+// Importa el plugin para mostrar etiquetas dentro del gráfico (porcentaje)
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
+// Registra todos los componentes y plugins necesarios en Chart.js
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  ChartDataLabels
+);
+
+// Componente funcional que muestra la distribución de género de los usuarios
 const UserGender = () => {
+  // Estado local para los datos del gráfico
   const [chartData, setChartData] = useState({
     labels: ['Femenino', 'Masculino', 'No Binario', 'Prefiero no decir'],
     datasets: [
       {
         label: 'Género',
-        data: [0, 0, 0, 0],
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+        data: [0, 0, 0, 0], // Inicialmente todos los valores son cero
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'], // Colores para cada género
       },
     ],
   });
 
+  // Hook useEffect que se ejecuta una sola vez al montar el componente
   useEffect(() => {
-    // Fetch users data from the API
+    // Realiza una petición GET para obtener la lista de usuarios
     axios.get('https://api1.sunger.xdn.com.mx/api/users/')
       .then(response => {
         const users = response.data;
 
-        // Initialize the gender count
+        // Objeto para contar los géneros
         const genderCount = {
           Femenino: 0,
           Masculino: 0,
           'No Binario': 0,
-          '-': 0,
+          '-': 0, // Representa 'Prefiero no decir'
         };
 
-        // Calculate the gender distribution
+        // Recorre la lista de usuarios y cuenta los géneros
         users.forEach(user => {
           if (user.genero === 'Femenino') genderCount.Femenino++;
           else if (user.genero === 'Masculino') genderCount.Masculino++;
@@ -41,7 +69,7 @@ const UserGender = () => {
           else if (user.genero === '-') genderCount['-']++;
         });
 
-        // Set the chart data
+        // Actualiza el estado del gráfico con los nuevos datos
         setChartData(prevData => ({
           ...prevData,
           datasets: [
@@ -57,37 +85,40 @@ const UserGender = () => {
           ],
         }));
       })
-      .catch(error => console.error('Error fetching users:', error));
-  }, []); // Empty dependency array to fetch once when the component mounts
+      .catch(error => console.error('Error fetching users:', error)); // Manejo de errores
+  }, []); // El arreglo vacío indica que esto se ejecuta solo al montar el componente
 
-  // Configuration for chart options
+  // Configuración de opciones para el gráfico
   const options = {
-    responsive: true,
+    responsive: true, // El gráfico se adapta al tamaño del contenedor
     plugins: {
       datalabels: {
-        color: '#fff', // White text color for datalabels
+        color: '#fff', // Color blanco para las etiquetas dentro del gráfico
         formatter: (value, ctx) => {
+          // Calcula el porcentaje que representa cada valor
           const total = ctx.chart._metasets[0].total;
           const percentage = ((value / total) * 100).toFixed(2) + '%';
-          return percentage; // Display percentage
+          return percentage; // Muestra el porcentaje en el gráfico
         },
         font: {
           weight: 'bold',
-          size: 14, // Font size for the percentage
+          size: 14, // Tamaño de la fuente
         },
       },
       tooltip: {
+        // Configura el contenido del tooltip que aparece al pasar el mouse
         callbacks: {
           label: function (tooltipItem) {
-            // Custom tooltip label to display the exact value
+            // Muestra el nombre del género y la cantidad exacta de usuarios
             const value = tooltipItem.raw;
-            return tooltipItem.label + ': ' + value; // Display the exact number on hover
+            return tooltipItem.label + ': ' + value;
           },
         },
       },
     },
   };
 
+  // Renderiza el componente con el gráfico de pastel
   return (
     <div>
       <h3>Distribución de Género</h3>
@@ -96,4 +127,5 @@ const UserGender = () => {
   );
 };
 
+// Exporta el componente para que pueda ser utilizado en otras partes del proyecto
 export default UserGender;

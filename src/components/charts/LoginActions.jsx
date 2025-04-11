@@ -1,27 +1,40 @@
+// Importación de módulos de React y Chart.js
 import React, { useEffect, useState } from 'react';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale } from 'chart.js';
-import axios from 'axios';
+import { Line } from 'react-chartjs-2'; // Gráfico de líneas
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale
+} from 'chart.js';
+import axios from 'axios'; // Para llamadas HTTP
 
-// Register the necessary chart.js components
+// Registro de los componentes necesarios de Chart.js
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
 
+// Componente principal
 const LoginActions = () => {
-  const [logins, setLogins] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  // Estados para los datos y filtros
+  const [logins, setLogins] = useState([]); // Lista completa de acciones de login
+  const [loading, setLoading] = useState(true); // Indicador de carga
+  const [startDate, setStartDate] = useState(''); // Filtro de fecha inicial
+  const [endDate, setEndDate] = useState(''); // Filtro de fecha final
   const [selectedActions, setSelectedActions] = useState({
     Login: true,
     Logout: true,
     Registro: true,
-  });
+  }); // Acciones seleccionadas para mostrar en el gráfico
 
+  // useEffect para cargar los datos al iniciar el componente
   useEffect(() => {
     axios.get('https://api1.sunger.xdn.com.mx/api/logins/')
       .then(response => {
-        setLogins(response.data);
-        setLoading(false);
+        setLogins(response.data); // Guardar acciones obtenidas
+        setLoading(false); // Desactivar indicador de carga
       })
       .catch(error => {
         console.error("Error fetching login data:", error);
@@ -29,17 +42,18 @@ const LoginActions = () => {
       });
   }, []);
 
-  // If the data is still loading, show a loading indicator
+  // Mostrar un mensaje mientras se cargan los datos
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  // Function to filter the data based on date range
+  // Función que filtra los logins por fecha según los valores seleccionados
   const filterLoginsByDate = (logins) => {
-    if (!startDate && !endDate) return logins; // No date filter applied
+    if (!startDate && !endDate) return logins;
 
     return logins.filter((login) => {
-      const loginDate = new Date(login.hora);
+      const loginDate = new Date(login.hora); // Fecha del evento
+
       if (startDate && endDate) {
         return loginDate >= new Date(startDate) && loginDate <= new Date(endDate);
       }
@@ -49,21 +63,24 @@ const LoginActions = () => {
       if (endDate) {
         return loginDate <= new Date(endDate);
       }
+
       return true;
     });
   };
 
-  // Grouping actions by date (ignoring time)
+  // Agrupar acciones por fecha (ignorando la hora)
   const groupedData = filterLoginsByDate(logins).reduce((acc, login) => {
-    const date = new Date(login.hora); // Create a Date object from the `hora` field
-    const formattedDate = date.toLocaleDateString(); // Format the date (you can modify this to your preferred format)
+    const date = new Date(login.hora);
+    const formattedDate = date.toLocaleDateString(); // Formato de fecha legible
 
     const action = login.accion;
 
+    // Inicializar el objeto del día si aún no existe
     if (!acc[formattedDate]) {
       acc[formattedDate] = { Login: 0, Logout: 0, Registro: 0 };
     }
 
+    // Contar la acción según el tipo
     if (action === 'Login') {
       acc[formattedDate].Login++;
     } else if (action === 'Logout') {
@@ -75,15 +92,15 @@ const LoginActions = () => {
     return acc;
   }, {});
 
-  // Extract the labels (dates) and data for each action based on selected checkboxes
-  const labels = Object.keys(groupedData);
+  // Extraer fechas y datos según la acción
+  const labels = Object.keys(groupedData); // Fechas para el eje X
   const loginData = labels.map(label => groupedData[label].Login);
   const logoutData = labels.map(label => groupedData[label].Logout);
   const registroData = labels.map(label => groupedData[label].Registro);
 
-  // Prepare chart data dynamically based on selected actions
+  // Preparar datasets para el gráfico según acciones seleccionadas
   const data = {
-    labels: labels, // Date labels
+    labels: labels, // Fechas
     datasets: [
       selectedActions.Login && {
         label: 'Login',
@@ -106,10 +123,10 @@ const LoginActions = () => {
         backgroundColor: 'rgba(255, 206, 86, 0.2)',
         fill: true,
       },
-    ].filter(Boolean), // Filter out any null values from the dataset array
+    ].filter(Boolean), // Elimina cualquier dataset que sea falso (por checkbox desmarcado)
   };
 
-  // Chart options
+  // Opciones del gráfico
   const options = {
     responsive: true,
     plugins: {
@@ -119,7 +136,7 @@ const LoginActions = () => {
       },
       tooltip: {
         mode: 'index',
-        intersect: false,
+        intersect: false, // Mejora la experiencia con múltiples datasets
       },
     },
     scales: {
@@ -128,7 +145,7 @@ const LoginActions = () => {
           display: true,
           text: 'Fecha',
         },
-        type: 'category', // Display the dates on the X-axis
+        type: 'category', // Tipo de eje X
       },
       y: {
         title: {
@@ -139,7 +156,7 @@ const LoginActions = () => {
     },
   };
 
-  // Handle checkbox change
+  // Manejar cambios en los checkboxes de selección de acciones
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
     setSelectedActions((prevSelectedActions) => ({
@@ -148,11 +165,12 @@ const LoginActions = () => {
     }));
   };
 
+  // Renderizado del componente
   return (
     <div>
       <h3>Acciones de Login por Día</h3>
 
-      {/* Date filters */}
+      {/* Filtros de fecha */}
       <div>
         <label>Fecha de inicio: </label>
         <input
@@ -168,7 +186,7 @@ const LoginActions = () => {
         />
       </div>
 
-      {/* Action checkboxes */}
+      {/* Filtros por tipo de acción */}
       <div>
         <label>
           <input
@@ -199,9 +217,11 @@ const LoginActions = () => {
         </label>
       </div>
 
+      {/* Gráfico de líneas */}
       <Line data={data} options={options} />
     </div>
   );
 };
 
+// Exportar el componente
 export default LoginActions;
